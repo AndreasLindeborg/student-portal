@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+
+
+:root {
+  --background: #36454F;
+  --foreground: #BFC7D5;        /* Soft white for text */
+  --muted: #AAB4BE;             /* Muted gray for subtitles */
+  --accent: #64ffda;            /* Teal accent (or pick another) */
+  --nav-link: #CBD5E1;          /* Slightly stronger nav links */
+}
+
+
+/* Remove this media query block */
+/* @media (prefers-color-scheme: light) {
+  :root {
+    --background: #ffffff;
+    --foreground: #171717;
+    --muted: #4b5563;
+    --accent: #007acc;
+  }
+}*/
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Apply the Inter font and set background and text color */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
