@@ -1,0 +1,47 @@
+@startuml
+actor Student
+participant HomePage
+participant LoginPage
+participant DashboardPage
+participant QuizPage
+participant APIHandlers as API
+participant SharedFiles
+
+== Login and Navigation ==
+Student -> HomePage : Access "/"
+HomePage -> LoginPage : Navigate to login
+Student -> LoginPage : Enter student ID
+LoginPage -> DashboardPage : Redirect on successful login
+
+== Start a Quiz ==
+Student -> DashboardPage : Click "Start Quiz"
+DashboardPage -> QuizPage : Navigate to "/quiz/[quizId]"
+QuizPage -> API : GET /api/quizzes/[quizId]
+API -> SharedFiles : Read quiz_001.json
+SharedFiles --> API : quiz data
+API --> QuizPage : quiz data
+
+== Submit Quiz ==
+Student -> QuizPage : Submit answers
+QuizPage -> API : POST /api/submit
+API -> SharedFiles : Write to answers_001_x.json
+API -> SharedFiles : Generate result_001_x.json
+API --> QuizPage : Acknowledge submission
+
+== View Result ==
+Student -> DashboardPage : Click "View Results"
+DashboardPage -> ResultPage : Navigate to "/result/[quizId]"
+ResultPage -> API : GET /api/results/[quizId]
+API -> SharedFiles : Read result_001_x.json
+SharedFiles --> API : result data
+API --> ResultPage : result data
+
+== Practice Quiz ==
+Student -> DashboardPage : Click "Practice Quiz"
+DashboardPage -> PracticePage : Navigate to "/practice/[quizId]"
+PracticePage -> API : GET /api/practice/[quizId]
+API -> SharedFiles : Read quiz_001.json
+API -> SharedFiles : Write practice_001_x.json
+API --> PracticePage : randomized quiz data
+
+@enduml

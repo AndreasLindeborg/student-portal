@@ -1,0 +1,72 @@
+@startuml
+
+package "Module 3: Student Portal" {
+
+package "Page Routing (src/app)" {
+  class App {
+    .. Routes ..
+
+    "/" → HomePage  \n(src/app/page.tsx)
+
+    "/login" → LoginPage  \n(src/app/login/page.tsx)
+
+    "/dashboard" → DashboardPage  \n(src/app/dashboard/page.tsx)
+
+    "/quiz/[quizId]" → QuizPage  \n(src/app/quiz/[quizId]/page.tsx)
+
+    "/result/[quizId]" → ResultPage  \n(src/app/result/[quizId]/page.tsx)
+    
+    "/practice/[quizId]" → PracticePage  \n(src/app/practice/[quizId]/page.tsx)
+  }
+}
+  package "Student Portal" {
+    class HomePage
+    class LoginPage
+    class DashboardPage
+    class QuizPage
+    class ResultPage
+    class PracticePage
+
+    HomePage  --> LoginPage : ➔ Go to login
+    LoginPage --> DashboardPage : secure login
+    DashboardPage --> QuizPage : ➔ Start Quiz
+    DashboardPage --> ResultPage : ➔ View Results
+    DashboardPage --> PracticePage : ➔ Practice Quiz
+
+    QuizPage --> DashboardPage : ↶ Return
+    ResultPage --> DashboardPage : ↶ Return
+    PracticePage --> DashboardPage : ↶ Return
+    DashboardPage --> LoginPage : ↶ Log out
+  }
+
+package "API Routes (src/app/api)" {
+  class APIHandlers {
+    .. Routes ..
+
+    "GET /api/quizzes" \n(src/app/api/quizzes/route.ts)
+    
+    "GET /api/quizzes/[quizId]" \n(src/app/api/quizzes/[quizId]/route.ts)
+
+    "GET /api/results/[quizId]" \n(src/app/api/results/[quizId]/route.ts)
+
+    "GET /api/users/[studentId]" \n(src/app/api/users/[studentId]/route.ts)
+
+    "GET /api/practice/[quizId]" \n(src/app/api/practice/[quizId]/route.ts)
+
+    "POST /api/submit" \n(src/app/api/submit/route.ts)
+  }
+}
+
+  package "Shared Folder (shared-files/)" {
+    class SharedFiles {
+      .. JSON Files ..
+      quizzes/ → quiz_001.json, quiz_003.json
+      users/ → student_1.json, student_2.json
+      answers/ → answers_001_1.json, ...
+      results/ → result_001_1.json, ...
+      practice/ → practice_001_1.json, ...
+    }
+  }
+
+}
+@enduml
