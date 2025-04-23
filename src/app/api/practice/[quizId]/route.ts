@@ -1,61 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
+import { NextRequest, NextResponse } from 'next/server'
+import path from 'path'
+import fs from 'fs'
 
-function shuffle<T>(array: T[]): T[] {
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
   }
-  return copy;
+  return a
 }
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { quizId: string } }
 ) {
-  // 1) await params before using
-  const { quizId } = await params;
+  // ✔ await params
+  const { quizId } = await params
 
-  // 2) pull studentId from query if you need it
-  const studentId = req.nextUrl.searchParams.get('studentId') || 'anonymous';
+  const studentId = req.nextUrl.searchParams.get('studentId')
+  if (!studentId) {
+    return new NextResponse('Missing studentId', { status: 400 })
+  }
 
-  const filePath = path.join(
+  const quizFile = path.join(
     process.cwd(),
     'shared-files',
     'quizzes',
     `quiz_${quizId}.json`
-  );
+  )
 
   try {
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    const quiz = JSON.parse(raw);
+    const raw = fs.readFileSync(quizFile, 'utf-8')
+    const quiz = JSON.parse(raw)
 
-    // Shuffle questions/options for practice
-    const shuffledQuestions = shuffle(quiz.questions).map((q: any) => {
-      const originalOptions = q.options;
-      const shuffledOptions = shuffle(originalOptions);
-
-      // find new index of the correct answer
-      const newAnswerIndex = shuffledOptions.findIndex(
-        opt => opt === originalOptions[q.answerIndex]
-      );
-
-      return {
-        ...q,
-        options: shuffledOptions,
-        answerIndex: newAnswerIndex,
-      };
-    });
+    const questions = shuffle(quiz.questions).map((q: any) => {
+      const opts = shuffle(q.options)
+      const answerIndex = opts.findIndex(
+        (opt) => opt === q.options[q.answerIndex]
+      )
+      return { ...q, options: opts, answerIndex }
+    })
 
     return NextResponse.json({
       quizId,
+      studentId,
       title: `Practice - ${quiz.title}`,
-      questions: shuffledQuestions
-    });
+      questions,
+    })
   } catch (err) {
-    console.error(err);
-    return new NextResponse('Practice quiz not found', { status: 404 });
+    console.error(err)
+    return new NextResponse('Practice quiz not found', { status: 404 })
   }
 }

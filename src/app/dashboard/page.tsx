@@ -110,7 +110,7 @@ export default function DashboardPage() {
                 View Result
               </Link>
               <Link
-                href={`/practice/${quiz.quizId}`}
+                href={`/practice/${quiz.quizId}?studentId=${profile.studentId}`}
                 className="text-green-600 dark:text-green-400 underline"
               >
                 Practice Quiz
