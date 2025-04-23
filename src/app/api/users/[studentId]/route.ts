@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
@@ -15,7 +14,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { studentId: string } }
 ) {
-  const safeId = normalizeId(params.studentId);
+  // await params before using it
+  const { studentId } = await params;
+  const safeId = normalizeId(studentId);
   const dir = path.join(process.cwd(), "shared-files", "users");
   const fn = path.join(dir, `student_${safeId}.json`);
 
@@ -38,7 +39,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { studentId: string } }
 ) {
-  const safeId = normalizeId(params.studentId);
+  // await params before using it
+  const { studentId } = await params;
+  const safeId = normalizeId(studentId);
   const fn = path.join(
     process.cwd(),
     "shared-files",

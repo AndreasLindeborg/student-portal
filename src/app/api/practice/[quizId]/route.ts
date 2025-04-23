@@ -1,6 +1,6 @@
+import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
-import { NextResponse } from 'next/server';
 
 function shuffle<T>(array: T[]): T[] {
   const copy = [...array];
@@ -12,31 +12,34 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { quizId: string } }
 ) {
-  const url = new URL(req.url);
-  const studentId = url.searchParams.get('studentId') || 'anonymous';
+  // 1) await params before using
+  const { quizId } = await params;
+
+  // 2) pull studentId from query if you need it
+  const studentId = req.nextUrl.searchParams.get('studentId') || 'anonymous';
 
   const filePath = path.join(
     process.cwd(),
     'shared-files',
     'quizzes',
-    `quiz_${params.quizId}.json`
+    `quiz_${quizId}.json`
   );
 
   try {
     const raw = fs.readFileSync(filePath, 'utf-8');
     const quiz = JSON.parse(raw);
 
-    // Shuffle questions
+    // Shuffle questions/options for practice
     const shuffledQuestions = shuffle(quiz.questions).map((q: any) => {
       const originalOptions = q.options;
       const shuffledOptions = shuffle(originalOptions);
 
-      // Update answerIndex to new index in shuffled options
+      // find new index of the correct answer
       const newAnswerIndex = shuffledOptions.findIndex(
-        (opt) => opt === originalOptions[q.answerIndex]
+        opt => opt === originalOptions[q.answerIndex]
       );
 
       return {
@@ -46,7 +49,11 @@ export async function GET(
       };
     });
 
-    return NextResponse.json({ ...quiz, questions: shuffledQuestions });
+    return NextResponse.json({
+      quizId,
+      title: `Practice - ${quiz.title}`,
+      questions: shuffledQuestions
+    });
   } catch (err) {
     console.error(err);
     return new NextResponse('Practice quiz not found', { status: 404 });

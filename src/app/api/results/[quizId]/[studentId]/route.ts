@@ -6,7 +6,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { quizId: string; studentId: string } }
 ) {
-  const { quizId, studentId } = params;
+  // await params before destructuring
+  const { quizId, studentId } = await params;
+
   const filePath = path.join(
     process.cwd(),
     'shared-files',

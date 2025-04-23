@@ -6,11 +6,14 @@ export async function GET(
   _: NextRequest,
   { params }: { params: { quizId: string } }
 ) {
+  // Must await params before using it
+  const { quizId } = await params;
+
   const filePath = path.join(
     process.cwd(),
     'shared-files',
     'quizzes',
-    `quiz_${params.quizId}.json`
+    `quiz_${quizId}.json`
   );
 
   try {
