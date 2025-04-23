@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 export async function GET(
   req: NextRequest,
-  context: { params: { quizId: string } }
+  { params }: { params: { quizId: string; studentId: string } }
 ) {
-  const { quizId } = context.params;
-  const studentId = req.nextUrl.searchParams.get('studentId') || 'anonymous';
-
+  const { quizId, studentId } = params;
   const filePath = path.join(
     process.cwd(),
     'shared-files',
@@ -19,7 +17,10 @@ export async function GET(
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
     return NextResponse.json(JSON.parse(content));
-  } catch (err) {
-    return new NextResponse('Result not found', { status: 404 });
+  } catch {
+    return NextResponse.json(
+      { error: 'Result not found' },
+      { status: 404 }
+    );
   }
 }
