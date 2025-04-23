@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -21,8 +21,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (isLoading || !isAuthenticated || !user) return;
 
-    const sub = encodeURIComponent(user.sub!);
-    const apiUrl = `/api/users/${sub}`;
+    const rawSub = user.sub!;                               // e.g. "auth0|6809277e35629091a442a64b"
+    const studentId = encodeURIComponent(
+      rawSub.includes('|') ? rawSub.split('|')[1] : rawSub
+    );
+    const apiUrl = `/api/users/${studentId}`;
 
     (async () => {
       let res = await fetch(apiUrl);
@@ -62,11 +65,19 @@ export default function DashboardPage() {
   if (!isAuthenticated) return <p>Please log in first.</p>;
   if (!profile) return <p>Initializing your profile…</p>;
 
+  // strip off the prefix again for client-side links
+  const rawSub = user!.sub!;
+  const studentId = encodeURIComponent(
+    rawSub.includes('|') ? rawSub.split('|')[1] : rawSub
+  );
+
   // 4) Actual dashboard UI
   return (
     <main className="min-h-screen p-6 bg-gray-50 dark:bg-black text-black dark:text-white">
       <div className="flex justify-between mb-4">
-        <h1 className="text-2xl font-bold">Welcome, {profile.name || profile.email}!</h1>
+        <h1 className="text-2xl font-bold">
+          Welcome, {profile.name || profile.email}!
+        </h1>
         <button
           onClick={() =>
             logout({ logoutParams: { returnTo: window.location.origin } })
@@ -93,7 +104,7 @@ export default function DashboardPage() {
                 Start Quiz
               </Link>
               <Link
-                href={`/result/${quiz.quizId}`}
+                href={`/result/${quiz.quizId}/${studentId}`}
                 className="text-purple-600 dark:text-purple-400 underline"
               >
                 View Result
