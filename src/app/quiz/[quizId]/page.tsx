@@ -12,6 +12,7 @@ export default function QuizPage() {
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [answers, setAnswers] = useState<number[]>([]);
+  const [submitted, setSubmitted] = useState(false);
 
   // load quiz metadata
   useEffect(() => {
@@ -34,48 +35,41 @@ export default function QuizPage() {
   const handleSubmit = async () => {
     if (!quiz || !user) return;
 
-    // 1) strip off any "auth0|" prefix if present
-    const rawSub = user.sub!;                           // e.g. "auth0|6809277e35629091a442a64b"
+    const rawSub = user.sub!;
     const idOnly = rawSub.includes('|') ? rawSub.split('|')[1] : rawSub;
-    const studentId = encodeURIComponent(idOnly);       // "6809277e35629091a442a64b"
-
+    const studentId = encodeURIComponent(idOnly);
     const submittedAt = new Date().toISOString();
-    const score = quiz.questions.reduce(
-      (sum, q, idx) => sum + (answers[idx] === q.answerIndex ? 1 : 0),
-      0
-    );
-
-    const result = {
-      quizId,
-      studentId,
-      score,
-      total: quiz.questions.length,
-      submittedAt,
-      feedback:
-        score === quiz.questions.length
-          ? "Excellent work! You've got full marks."
-          : "Thanks for participating! You can review your answers in the results.",
-    };
 
     try {
-      // 2) POST to the param’ed endpoint
       await fetch(`/api/submit/${quizId}/${studentId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, result }),
+        body: JSON.stringify({ answers }),
       });
+      setSubmitted(true);
     } catch (e) {
       console.error('Submit failed', e);
-      return;
     }
-
-    // 3) redirect to the fully parameterized result page
-    router.push(`/result/${quizId}/${studentId}`);
   };
 
   if (isLoading) return <main className="p-6">Loading user…</main>;
   if (!isAuthenticated) return <main className="p-6">Please log in first.</main>;
   if (!quiz) return <main className="p-6">Loading quiz…</main>;
+
+  if (submitted) {
+    return (
+      <main className="p-6 space-y-4">
+        <h1 className="text-xl font-semibold">Quiz answers submitted.</h1>
+        <p>Waiting for teacher to correct.</p>
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="mt-4 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Back to Dashboard
+        </button>
+      </main>
+    );
+  }
 
   return (
     <main className="p-6 space-y-8">
